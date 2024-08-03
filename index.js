@@ -2,7 +2,9 @@ const mcs = require('node-mcstatus');
 
 const TelegramApi = require('node-telegram-bot-api')
 
-const bot = new TelegramApi(BOT_TOKEN_API, {polling: true})
+const token = '7233504029:AAHL9lUjlZXDOyZU8xt5_RL23i2bMX6fhzI'
+
+const bot = new TelegramApi(token, {polling: true})
 
 const host = 'europe_rp.aternos.me'
 const port = '34331'
