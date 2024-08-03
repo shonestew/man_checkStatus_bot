@@ -1,5 +1,7 @@
 const mcs = require('node-mcstatus');
 
+const keep_alive = require('./keep_alive.js')
+
 const TelegramApi = require('node-telegram-bot-api')
 
 const token = '7233504029:AAHL9lUjlZXDOyZU8xt5_RL23i2bMX6fhzI'
