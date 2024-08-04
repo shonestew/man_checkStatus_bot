@@ -62,7 +62,7 @@ bot.onText(/Добавить хост (.+) (\d+)/, async (msg, match) => {
 		}
 	});
 });
-bot.onText(/Сервер онлайн?/, async (msg) => {
+bot.onText(/Статус/, async (msg) => {
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatServers = loadChatServers();
