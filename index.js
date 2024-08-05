@@ -63,34 +63,29 @@ bot.onText(/Добавить хост (.+) (\d+)/, async (msg, match) => {
 	});
 });
 bot.onText(/Статус/, async (msg) => {
-	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
-		if ((data.status == "creator") || (data.status == "administrator")) {
-			const chatServers = loadChatServers();
-			const chatId = msg.chat.id.toString();
-			if (!chatServers[chatId]) {
-				bot.sendMessage(chatId, '❌ Вы забыли добавить IP-адрес и порт сервера!');
-				return;
-			}
-			const {
-				host,
-				port
-			} = chatServers[chatId];
-			try {
-				mcs.statusBedrock(host, port).then((res) => {
-					if (res.online == true) {
-						bot.sendMessage(chatId, `✅ Статус сервера - включен!\n📡 Айпи-адрес: ${host}, порт: ${port}\n👥 Игроки в сети: ${res.players.online}/${res.players.max}.`);
-					} else {
-						bot.sendMessage(chatId, '❌ Сервер отключён!');
-					}
-				});
-			} catch (error) {
-				console.error('Ошибка при проверке статуса сервера:', error);
-				bot.sendMessage(chatId, '❌ Произошла ошибка при проверке статуса сервера.');
-			}
+const chatServers = loadChatServers();
+const chatId = msg.chat.id.toString();
+if (!chatServers[chatId]) {
+	bot.sendMessage(chatId, '❌ Вы забыли добавить IP-адрес и порт сервера!');
+	return;
+}
+const {
+	host,
+	port
+} = chatServers[chatId];
+try {
+	mcs.statusBedrock(host, port).then((res) => {
+		if (res.online == true) {
+			bot.sendMessage(chatId, `✅ Статус сервера - включен!\n📡 Айпи-адрес: ${host}, порт: ${port}\n👥 Игроки в сети: ${res.players.online}/${res.players.max}.`);
 		} else {
-			bot.sendMessage(msg.chat.id, '🔐 Вам отказано в доступе')
+			bot.sendMessage(chatId, '❌ Сервер отключён!');
 		}
 	});
+} catch (error) {
+	console.error('Ошибка при проверке статуса сервера:', error);
+	bot.sendMessage(chatId, '❌ Произошла ошибка при проверке статуса сервера.');
+}
+});
 });
 bot.onText(/Удалить хост/, async (msg) => {
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
