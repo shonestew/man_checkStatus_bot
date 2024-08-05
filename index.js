@@ -1,8 +1,8 @@
 const fs = require('fs');
+require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const mcs = require('node-mcstatus');
-const token = '7380107503:AAGLW1v8oXUiy6rnNDePTEQ09NT6mFiJS2I';
-const bot = new TelegramBot(token, {
+const bot = new TelegramBot(process.env.BOT_TOKEN, {
 	polling: true
 });
 const chatServersFile = 'chat_servers.json';
