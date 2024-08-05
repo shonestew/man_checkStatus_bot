@@ -1,7 +1,7 @@
 const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api');
 const mcs = require('node-mcstatus');
-const token = '7380107503:AAFbPffkeyIvkxOqSfGCWL2IgS9YE_U0R9U'
+const token = '7380107503:AAEyrPee7HtHOjQp0ipguuxkeRaaWCp8Ao8'
 const bot = new TelegramBot(token, {
 	polling: true
 });
@@ -28,7 +28,7 @@ bot.on('message', (msg) => {
 		bot.sendMessage(msg.chat.id, '🔐 Этот бот работает только в чатах/группах!\n📋 Доступные команды:\n"Добавить хост (айпи) (порт)" - добавляет сервер в список(только для администратора).\nПример использования - "Добавить хост example.com 19132".\n"Сервер онлайн?" - проверяет статус сервера.\n"Удалить хост" - удаляет хост(только для администратора)')
 	}
 })
-bot.onText(/Добавить хост (.+) (\d+)/, async (msg, match) => {
+bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatServers = loadChatServers();
@@ -62,7 +62,7 @@ bot.onText(/Добавить хост (.+) (\d+)/, async (msg, match) => {
 		}
 	});
 });
-bot.onText(/Статус/, async (msg) => {
+bot.onText(/Статус/i, async (msg) => {
 const chatServers = loadChatServers();
 const chatId = msg.chat.id.toString();
 if (!chatServers[chatId]) {
@@ -86,8 +86,7 @@ try {
 	bot.sendMessage(chatId, '❌ Произошла ошибка при проверке статуса сервера.');
 }
 });
-});
-bot.onText(/Удалить хост/, async (msg) => {
+bot.onText(/Удалить хост/i, async (msg) => {
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatId = msg.chat.id.toString();
@@ -104,7 +103,7 @@ bot.onText(/Удалить хост/, async (msg) => {
 		}
 	});
 });
-bot.onText(/Помощь/, async (msg) => {
+bot.onText(/Помощь/i, async (msg) => {
 	bot.sendMessage(msg.chat.id, '📋 Доступные команды:\n"Добавить хост (айпи) (порт)" - добавляет сервер в список(только для администратора).\nПример использования - "Добавить хост example.com 19132".\n"Сервер онлайн?" - проверяет статус сервера.\n"Удалить хост" - удаляет хост(только для администратора)')
 });
 console.log('Бот заработал, ебать.')
