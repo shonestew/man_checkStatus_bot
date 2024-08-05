@@ -1,7 +1,7 @@
 const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api');
 const mcs = require('node-mcstatus');
-const token = '7380107503:AAHqSTnL78QG7tQKSXDWFV-uDa42h0QELQI'
+const token = '7380107503:AAE7mkYNtLBmDeHH_T3O8ZN3lc0I8x-kQgc'
 const bot = new TelegramBot(token, {
 	polling: true
 });
