@@ -1,3 +1,6 @@
+// В херне ниже убираете комментарий если на хостинге, на котором ставите этот код есть таймаут(когда при бездействии бота он отключается).
+// Не забудьте импортировать все библиотеки. А, и обход таймаута не работает на Реплите.
+// const keep_alive = require('./keep_alive.js/');
 const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api');
 const mcs = require('node-mcstatus');
