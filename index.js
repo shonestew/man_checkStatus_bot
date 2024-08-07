@@ -8,37 +8,82 @@ const token = 'BOT_TOKEN_HERE';
 const bot = new TelegramBot(token, {
 	polling: true
 });
-// Загрузка параметров с файла.
-function loadChatServers() {
-    try {
-        const data = fs.readFileSync("chat_servers.json", "utf8");
-        return JSON.parse(data);
-    } catch (err) {
-        return {};
-    }
+const usersInTimeout = [];
+
+function formatTime(ms) {
+	const seconds = Math.floor(ms / 1000) % 60;
+	const minutes = Math.floor(ms / (1000 * 60)) % 60;
+	const hours = Math.floor(ms / (1000 * 60 * 60));
+	return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
-// Сохранение введенных параметров в файл.
-function saveChatServers(data) {    fs.writeFileSync("chat_servers.json", JSON.stringify(data, null, 2));
+
+function setCooldown(userId, timeoutDelay) {
+	const userInTimeout = usersInTimeout.find(user => user.userID === userId);
+	if (userInTimeout) {
+		const remainingTime = timeoutDelay - (Date.now() - userInTimeout.timeoutStart);
+		const formattedTime = formatTime(remainingTime);
+		return `🕘 Кулдаун на команду спадёт через: **${formattedTime}**`;
+	}
+	usersInTimeout.push({
+		userID: userId,
+		timeoutStart: Date.now()
+	});
+	setTimeout(() => {
+		const index = usersInTimeout.findIndex(user => user.userID === userId);
+		if (index !== -1) {
+			usersInTimeout.splice(index, 1);
+		}
+	}, timeoutDelay);
+	return null;
+}
+
+function loadChatServers() {
+	try {
+		const data = fs.readFileSync("chat_servers.json", "utf8");
+		return JSON.parse(data);
+	} catch (err) {
+		return {};
+	}
+}
+
+function saveChatServers(data) {
+	fs.writeFileSync("chat_servers.json", JSON.stringify(data, null, 2));
 }
 bot.on('polling_error', (error) => {
 	console.error('Ошибка при работе с пуллингом:', error);
 });
-// Ивент на написание любой херни или команды /start в личной переписке с ботом.
 bot.on('message', (msg) => {
 	if (msg.chat.type == 'private') {
 		if (msg.text == '/start') {
+			let timeoutDelay = 1000 * 20;
+			let userId = msg.from.id;
+			let cooldownMessage = setCooldown(userId, timeoutDelay);
+			if (cooldownMessage) {
+				bot.sendMessage(msg.chat.id, cooldownMessage, {
+					parse_mode: 'Markdown'
+				});
+				return;
+			}
 			bot.sendMessage(msg.chat.id, '👋 <b>Привет! Это бот для проверки статуса сервера!\nЭтот бот работает только в группах.\n📋 Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост\(только для администратора\)', {
-			parse_mode: "HTML"
+				parse_mode: "HTML"
 			});
 		} else {
-		bot.sendMessage(msg.chat.id, '🔐 <b>Этот бот работает только в чатах/группах!\n📋 Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост\(только для администратора\)', {
-			parse_mode: "HTML"
-		});
+			bot.sendMessage(msg.chat.id, '🔐 <b>Этот бот работает только в чатах/группах!\n📋 Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост\(только для администратора\)', {
+				parse_mode: "HTML"
+			});
 		}
 	}
 })
-// Команда добавления айпи-адреса и порта хоста в параметрах чата.
 bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
+	let timeoutDelay = 1000 * 15;
+	let userId = msg.from.id;
+	let cooldownMessage = setCooldown(userId, timeoutDelay);
+	if (cooldownMessage) {
+		bot.sendMessage(msg.chat.id, cooldownMessage, {
+			parse_mode: 'Markdown'
+		});
+		return;
+	}
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatServers = loadChatServers();
@@ -49,7 +94,10 @@ bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
 				mcs.statusBedrock(host, port).then((result) => {
 					if (result.online == true || result.online == false) {
 						if (!chatServers[chatId]) {
-							chatServers[chatId] = { host, port };
+							chatServers[chatId] = {
+								host,
+								port
+							};
 							saveChatServers(chatServers);
 							bot.sendMessage(chatId, `✅ Сервер с айпи-адресом: <code>${host}</code>, и портом: <code>${port}</code> успешно добавлен!`, {
 								parse_mode: "HTML"
@@ -72,34 +120,48 @@ bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
 		}
 	});
 });
-// Проверка статуса сервера по айпи-адресу и порту из параметров чата.
 bot.onText(/Статус/i, async (msg) => {
-try {
-	const chatId = msg.chat.id;
-	const server = loadChatServers()[chatId];
-	const host = server.host;
-	const port = server.port;
-	mcs.statusBedrock(host, port).then((res) => {
+	let timeoutDelay = 1000 * 5;
+	let userId = msg.from.id;
+	let cooldownMessage = setCooldown(userId, timeoutDelay);
+	if (cooldownMessage) {
+		return bot.sendMessage(msg.chat.id, cooldownMessage, {
+			parse_mode: 'Markdown'
+		});
+	}
+	try {
+		const chatId = msg.chat.id;
+		const server = loadChatServers()[chatId];
 		if (!server) {
-	bot.sendMessage(chatId, '❌ Вы забыли добавить IP-адрес и порт сервера!');
-	return;
-			
-		} else if (res.online == true) {
-			bot.sendMessage(chatId, `✅ Статус сервера - включен!\n📡 Айпи-адрес: <code>${host}</code>, порт: <code>${port}</code>\n👥 Игроки в сети: ${res.players.online}/${res.players.max}.`, {
-				parse_mode: "HTML"
-			});
-		} else if (res.online == false) {
-			bot.sendMessage(chatId, '❌ Сервер отключён!');
+			bot.sendMessage(chatId, '❌ Вы забыли добавить айпи-адрес и порт сервера!');
+			return;
 		}
-	});
-} catch (error) {
-	const chatId = msg.chat.id;
-	console.error('Ошибка при проверке статуса сервера:', error);
-	bot.sendMessage(chatId, '❌ Произошла ошибка при проверке статуса сервера.');
-}
+		const host = server.host;
+		const port = server.port;
+		mcs.statusBedrock(host, port).then((res) => {
+			if (res.online == true) {
+				bot.sendMessage(chatId, `✅ Статус сервера - включен!\n📡 Айпи-адрес: <code>${host}</code>, порт: <code>${port}</code>\n👥 Игроки в сети: ${res.players.online}/${res.players.max}.`, {
+					parse_mode: "HTML"
+				});
+			} else if (res.online == false) {
+				bot.sendMessage(chatId, '❌ Сервер отключён!');
+			}
+		});
+	} catch (error) {
+		const chatId = msg.chat.id;
+		console.error('Ошибка при проверке статуса сервера:', error, `\n\n🆔 Айди чата, где произошла ошибка: "${chatId}";`);
+		bot.sendMessage(chatId, `❌ Произошла ошибка при проверке статуса сервера. Возможно, вы забыли добавить айпи-адрес и порт сервера.\n🆔 Айди чата(если бот не работает): "${chatId}";`);
+	}
 });
-// Удалить параметры чата, а именно айпи-адрес и порт.
 bot.onText(/Удалить хост/i, async (msg) => {
+	let timeoutDelay = 1000 * 15;
+	let userId = msg.from.id;
+	let cooldownMessage = setCooldown(userId, timeoutDelay);
+	if (cooldownMessage) {
+		return bot.sendMessage(msg.chat.id, cooldownMessage, {
+			parse_mode: 'Markdown'
+		});
+	}
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatId = msg.chat.id.toString();
@@ -116,11 +178,17 @@ bot.onText(/Удалить хост/i, async (msg) => {
 		}
 	});
 });
-// Вызывает все команды.
 bot.onText(/Помощь/i, async (msg) => {
-	bot.sendMessage(msg.chat.id, '📋 <b>Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост(только для администратора)', {
+	let timeoutDelay = 1000 * 60;
+	let userId = msg.from.id;
+	let cooldownMessage = setCooldown(userId, timeoutDelay);
+	if (cooldownMessage) {
+		return bot.sendMessage(msg.chat.id, cooldownMessage, {
+			parse_mode: 'Markdown'
+		});
+	}
+	bot.sendMessage(msg.chat.id, `📋 <b>Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост(только для администратора)\n🆔 Айди чата(если бот не работает): "${msg.chat.id}";`, {
 		parse_mode: "HTML"
 	});
 });
-// Вывод в логи мотивационного текста
 console.log('Бот заработал, ебать.')
