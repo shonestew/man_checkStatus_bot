@@ -8,9 +8,9 @@ const token = 'BOT_TOKEN_HERE';
 const bot = new TelegramBot(token, {
 	polling: true
 });
-const usersInTimeout = [];
+/* const usersInTimeout = [];
 
-function formatTime(ms) {
+ function formatTime(ms) {
 	const seconds = Math.floor(ms / 1000) % 60;
 	const minutes = Math.floor(ms / (1000 * 60)) % 60;
 	const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -35,7 +35,7 @@ function setCooldown(userId, timeoutDelay) {
 		}
 	}, timeoutDelay);
 	return null;
-}
+}*/
 
 function loadChatServers() {
 	try {
@@ -55,7 +55,7 @@ bot.on('polling_error', (error) => {
 bot.on('message', (msg) => {
 	if (msg.chat.type == 'private') {
 		if (msg.text == '/start') {
-			let timeoutDelay = 1000 * 20;
+			/*let timeoutDelay = 1000 * 20;
 			let userId = msg.from.id;
 			let cooldownMessage = setCooldown(userId, timeoutDelay);
 			if (cooldownMessage) {
@@ -63,7 +63,7 @@ bot.on('message', (msg) => {
 					parse_mode: 'Markdown'
 				});
 				return;
-			}
+			}*/
 			bot.sendMessage(msg.chat.id, '👋 <b>Привет! Это бот для проверки статуса сервера!\nЭтот бот работает только в группах.\n📋 Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост\(только для администратора\)', {
 				parse_mode: "HTML"
 			});
@@ -75,7 +75,7 @@ bot.on('message', (msg) => {
 	}
 })
 bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
-	let timeoutDelay = 1000 * 15;
+	/*let timeoutDelay = 1000 * 15;
 	let userId = msg.from.id;
 	let cooldownMessage = setCooldown(userId, timeoutDelay);
 	if (cooldownMessage) {
@@ -83,7 +83,7 @@ bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
 			parse_mode: 'Markdown'
 		});
 		return;
-	}
+	}*/
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatServers = loadChatServers();
@@ -121,14 +121,14 @@ bot.onText(/Добавить хост (.+) (\d+)/i, async (msg, match) => {
 	});
 });
 bot.onText(/Статус/i, async (msg) => {
-	let timeoutDelay = 1000 * 5;
+	/*let timeoutDelay = 1000 * 5;
 	let userId = msg.from.id;
 	let cooldownMessage = setCooldown(userId, timeoutDelay);
 	if (cooldownMessage) {
 		return bot.sendMessage(msg.chat.id, cooldownMessage, {
 			parse_mode: 'Markdown'
 		});
-	}
+	}*/
 	try {
 		const chatId = msg.chat.id;
 		const server = loadChatServers()[chatId];
@@ -154,14 +154,14 @@ bot.onText(/Статус/i, async (msg) => {
 	}
 });
 bot.onText(/Удалить хост/i, async (msg) => {
-	let timeoutDelay = 1000 * 15;
+	/*let timeoutDelay = 1000 * 15;
 	let userId = msg.from.id;
 	let cooldownMessage = setCooldown(userId, timeoutDelay);
 	if (cooldownMessage) {
 		return bot.sendMessage(msg.chat.id, cooldownMessage, {
 			parse_mode: 'Markdown'
 		});
-	}
+	}*/
 	bot.getChatMember(msg.chat.id, msg.from.id).then(function(data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			const chatId = msg.chat.id.toString();
@@ -179,14 +179,14 @@ bot.onText(/Удалить хост/i, async (msg) => {
 	});
 });
 bot.onText(/Помощь/i, async (msg) => {
-	let timeoutDelay = 1000 * 60;
+	/*let timeoutDelay = 1000 * 60;
 	let userId = msg.from.id;
 	let cooldownMessage = setCooldown(userId, timeoutDelay);
 	if (cooldownMessage) {
 		return bot.sendMessage(msg.chat.id, cooldownMessage, {
 			parse_mode: 'Markdown'
 		});
-	}
+	}*/
 	bot.sendMessage(msg.chat.id, `📋 <b>Доступные команды:</b>\n"<code>Добавить хост (айпи) (порт)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>Добавить хост example.com 19132</code>".\n"<code>Статус</code>" - проверяет статус сервера.\n"<code>Удалить хост</code>" - удаляет хост(только для администратора)\n🆔 Айди чата(если бот не работает): "${msg.chat.id}";`, {
 		parse_mode: "HTML"
 	});
