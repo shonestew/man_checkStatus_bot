@@ -3,12 +3,27 @@ const axios = require('axios');
 const fs = require('fs');
 require('dotenv').config();
 
-const info = JSON.parse(fs.readFileSync('servers_info.json', { encoding: "utf-8" }));
+const info = JSON.parse(fs.readFileSync('servers_info.json', {
+    encoding: "utf-8"
+}));
+
 function saveInfo(info) {
     try {
         fs.writeFileSync("servers_info.json", JSON.stringify(info, null, 2));
     } catch (e) {
         console.log(e);
+    };
+};
+
+async function isAdmin(ctx) {
+    const chatId = ctx.message.chat.id;
+    const userId = ctx.message.from.id;
+    try {
+        const member = await ctx.telegram.getChatMember(chatId, userId);
+        return member.status === 'administrator' || member.status === 'creator';
+    } catch (error) {
+        console.error('Error fetching chat member:', error);
+        return false;
     };
 };
 
@@ -20,10 +35,13 @@ bot.command('addserver', async (ctx) => {
     const ip = args[1];
     const port = args[2];
     const slot = parseInt(args[3], 10) - 1;
+    const adminCheck = await isAdmin(ctx);
+    if (ctx.message.chat.type == 'private') return;
+    if (!adminCheck) return;
 
     if (!info[chatId]) {
         info[chatId] = [];
-    }
+    };
 
     if (slot < 0 || slot > 2) {
         await ctx.telegram.sendMessage(chatId, '❌ Вы указали неверный слот!');
@@ -34,32 +52,36 @@ bot.command('addserver', async (ctx) => {
     } else if (isNaN(port)) {
         await ctx.telegram.sendMessage(chatId, '❌ Порт не является числом.');
     } else {
-        info[chatId][slot] = { ip, port };
+        info[chatId][slot] = {
+            ip,
+            port
+        };
         saveInfo(info);
         ctx.telegram.sendMessage(chatId, '💾 Информация об сервере сохранена!');
-    }
+    };
 });
 
 bot.command('status', async (ctx) => {
     const chatId = ctx.message.chat.id;
     const args = ctx.message.text.slice(1).split(' ');
     const slot = parseInt(args[1], 10) - 1;
-    if (slot > -1 || slot < 3 ) {
+    if (slot > -1 || slot < 3) {
         let ip = info[chatId]?.[slot]?.ip;
         let port = info[chatId]?.[slot]?.port;
         let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
         let res = res_temp.data;
         let stat;
+        if (ctx.messsage.chat.type == 'private') return;
 
         if (!ip || !port) {
             ctx.telegram.sendMessage(chatId, '😔 В слоте №2 нету добавленного сервера.');
             return;
-        }
+        };
 
         if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
         } else {
-            stat = 'отключён.'
+            stat = 'отключён.';
         };
         await ctx.telegram.sendMessage(chatId, `🔌Состояние сервера в слоте №${slot + 1} - ${stat}`, {
             parse_mode: 'HTML'
@@ -70,14 +92,12 @@ bot.command('status', async (ctx) => {
             [Markup.button.callback('Слот №2', 'serv2')],
             [Markup.button.callback('Слот №3', 'serv3')]
         ]));
-    }; 
+    };
 });
 
 bot.on("callback_query", async (ctx) => {
-
     const chatId = ctx.update.callback_query.message.chat.id;
     const callId = ctx.update.callback_query.data;
-    console.log(callId, chatId)
 
     if (callId == 'serv1') {
         let ip = info[chatId]?.[0]?.ip;
@@ -89,7 +109,7 @@ bot.on("callback_query", async (ctx) => {
         if (!ip || !port) {
             ctx.editMessageText('😔 В слоте №1 нету добавленного сервера.');
             return;
-        }
+        };
 
         if (res.online === true) {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
@@ -109,13 +129,13 @@ bot.on("callback_query", async (ctx) => {
         if (!ip || !port) {
             ctx.editMessageText('😔 В слоте №2 нету добавленного сервера.');
             return;
-        }
-        
+        };
+
         if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
         } else {
-            stat = 'отключён.'
-        }
+            stat = 'отключён.';
+        };
         await ctx.editMessageText(`🔌 Состояние сервера в слоте №2 - ${stat}`, {
             parse_mode: 'HTML'
         });
@@ -129,12 +149,12 @@ bot.on("callback_query", async (ctx) => {
         if (!ip || !port) {
             ctx.editMessageText('😔 В слоте №3 нету добавленного сервера.');
             return;
-        }
+        };
 
         if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
         } else {
-            stat = 'отключён.'
+            stat = 'отключён.';
         };
         await ctx.editMessageText(`🔌Состояние сервера в слоте №3 - ${stat}`, {
             parse_mode: 'HTML'
@@ -147,6 +167,9 @@ bot.command("deleteserver", async (ctx) => {
     const args = ctx.message.text.slice(1).split(' ')
     const serverInfo = info;
     const slot = parseInt(args[1]) - 1;
+    const adminCheck = await isAdmin(ctx);
+    if (ctx.messsage.chat.type == 'private') return;
+    if (!adminCheck) return;
 
     if (slot < 0 || slot > 2) {
         await ctx.telegram.sendMessage(chatId, '❌ Вы указали неверный слот!');
@@ -159,10 +182,10 @@ bot.command("deleteserver", async (ctx) => {
     };
 });
 
-bot.command("help", async (ctx) =>{
+bot.command("help", async (ctx) => {
     await bot.telegram.sendMessage(ctx.message.chat.id, `📋 <b>Доступные команды:</b>\n"<code>/addserver (айпи) (порт) (слот, не больше 3)</code>" - добавляет сервер в список(только для администратора).\nПример использования - "<code>/addserver example.com 19132 1</code>".\n"<code>/status</code>"/status - высвечивает меню с слотами сервера для проверки статус сервера.\n"<code>/deleteserver (слот, не больше 3)</code>" - удаляет хост(только для администратора)\n🆔 Айди чата(если бот не работает): "${ctx.message.chat.id}";`, {
-		parse_mode: "HTML"
-	});
+        parse_mode: "HTML"
+    });
 });
 
 bot.launch();
