@@ -71,7 +71,7 @@ bot.command('status', async (ctx) => {
         let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
         let res = res_temp.data;
         let stat;
-        if (ctx.messsage.chat.type == 'private') return;
+        if (ctx.message.chat.type == 'private') return;
 
         if (!ip || !port) {
             ctx.telegram.sendMessage(chatId, '😔 В слоте №2 нету добавленного сервера.');
@@ -168,7 +168,7 @@ bot.command("deleteserver", async (ctx) => {
     const serverInfo = info;
     const slot = parseInt(args[1]) - 1;
     const adminCheck = await isAdmin(ctx);
-    if (ctx.messsage.chat.type == 'private') return;
+    if (ctx.message.chat.type == 'private') return;
     if (!adminCheck) return;
 
     if (slot < 0 || slot > 2) {
