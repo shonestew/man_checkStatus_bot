@@ -1,3 +1,5 @@
+// Импорт файла ниже нужен чтобы поднимать бота, и обходить ограничения хостингов по типу Render по времени бездействия.
+const keep_alive = require('./keep_alive.js');
 const { Telegraf, Markup } = require('telegraf');
 const axios = require('axios');
 const fs = require('fs');
