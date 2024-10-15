@@ -121,7 +121,7 @@ bot.on("callback_query", async (ctx) => {
         if (res.online === true) {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
         } else {
-            stat = 'отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.'
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`;
         };
         await ctx.editMessageText(`🔌Состояние сервера в слоте №1 - ${stat}`, {
             parse_mode: 'HTML'
@@ -141,7 +141,7 @@ bot.on("callback_query", async (ctx) => {
         if (res.online === true) {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
         } else {
-            stat = 'отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.';
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`;
         };
         await ctx.editMessageText(`🔌 Состояние сервера в слоте №2 - ${stat}`, {
             parse_mode: 'HTML'
@@ -161,7 +161,7 @@ bot.on("callback_query", async (ctx) => {
         if (res.online === true) {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
         } else {
-            stat = 'отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.';
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`;
         };
         await ctx.editMessageText(`🔌Состояние сервера в слоте №3 - ${stat}`, {
             parse_mode: 'HTML'
