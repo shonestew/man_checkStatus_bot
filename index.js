@@ -24,7 +24,19 @@ async function isAdmin(ctx) {
         const member = await ctx.telegram.getChatMember(chatId, userId);
         return member.status === 'administrator' || member.status === 'creator';
     } catch (error) {
-        console.error('Error fetching chat member:', error);
+        console.error('проблемки при проверке на админа:', error);
+        return false;
+    };
+};
+
+async function serverStatus(ip, port) {
+    const res_java = await (await axios.get(` https://api.mcsrvstat.us/3/${ip}:${port}`)).data;
+    const res_be = await (await axios.get(` https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)).data;
+    if (res_java.online === true) {
+        return res_java;
+    } else if (res_be.online === true) {
+        return res_be;
+    } else {
         return false;
     };
 };
@@ -38,9 +50,9 @@ bot.command('addserver', async (ctx) => {
     const port = args[2];
     const slot = parseInt(args[3], 10) - 1;
     const adminCheck = await isAdmin(ctx);
-    
-    if (ctx.message.chat.type == 'private') return;
-    
+
+    if (ctx.message.chat.type === 'private') return;
+
     if (!adminCheck) return;
 
     if (!info[chatId]) {
@@ -53,8 +65,6 @@ bot.command('addserver', async (ctx) => {
         await ctx.telegram.sendMessage(chatId, '❌ Вы не указали один из параметров!');
     } else if (info[chatId][slot]) {
         await ctx.telegram.sendMessage(chatId, '❌ В данном слоте уже записана информация об сервере!');
-    } else if (isNaN(port)) {
-        await ctx.telegram.sendMessage(chatId, '❌ Порт не является числом.');
     } else {
         info[chatId][slot] = {
             ip,
@@ -70,15 +80,15 @@ bot.command('status', async (ctx) => {
     const args = ctx.message.text.slice(1).split(' ');
     const slot = parseInt(args[1], 10) - 1;
 
-    if (ctx.message.chat.type == 'private') return;
-    
+    if (ctx.message.chat.type === 'private') return;
+
     if (slot > -1 || slot < 3) {
         let ip = info[chatId]?.[slot]?.ip;
         let port = info[chatId]?.[slot]?.port;
         let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
+        let res_java_temp
         let res = res_temp.data;
         let stat;
-        if (ctx.message.chat.type == 'private') return;
 
         if (!ip || !port) {
             ctx.telegram.sendMessage(chatId, '😔 В слоте №2 нету добавленного сервера.');
@@ -106,31 +116,30 @@ bot.on("callback_query", async (ctx) => {
     const chatId = ctx.update.callback_query.message.chat.id;
     const callId = ctx.update.callback_query.data;
 
-    if (callId == 'serv1') {
+    if (callId === 'serv1') {
         let ip = info[chatId]?.[0]?.ip;
         let port = info[chatId]?.[0]?.port;
-        let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
-        let res = res_temp.data;
+        let res = await serverStatus(ip, port);
         let stat;
 
-        if (!ip || !port) {
+        if (!ip && !port) {
             ctx.editMessageText('😔 В слоте №1 нету добавленного сервера.');
             return;
         };
 
-        if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
+        if (res === false) {
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
-            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`;
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
         };
+
         await ctx.editMessageText(`🔌Состояние сервера в слоте №1 - ${stat}`, {
             parse_mode: 'HTML'
         });
-    } else if (callId == 'serv2') {
+    } else if (callId === 'serv2') {
         let ip = info[chatId]?.[1]?.ip;
         let port = info[chatId]?.[1]?.port;
-        let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
-        let res = res_temp.data;
+        let res = await serverStatus(ip, port);
         let stat;
 
         if (!ip || !port) {
@@ -138,19 +147,19 @@ bot.on("callback_query", async (ctx) => {
             return;
         };
 
-        if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
+        if (res === false) {
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
-            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`;
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
         };
+
         await ctx.editMessageText(`🔌 Состояние сервера в слоте №2 - ${stat}`, {
             parse_mode: 'HTML'
         });
-    } else if (callId == 'serv3') {
+    } else if (callId === 'serv3') {
         let ip = info[chatId]?.[2]?.ip;
         let port = info[chatId]?.[2]?.port;
-        let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
-        let res = res_temp.data;
+        let res = await serverStatus(ip, port);
         let stat;
 
         if (!ip || !port) {
@@ -158,11 +167,12 @@ bot.on("callback_query", async (ctx) => {
             return;
         };
 
-        if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
+        if (res === false) {
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
-            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`;
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
         };
+
         await ctx.editMessageText(`🔌Состояние сервера в слоте №3 - ${stat}`, {
             parse_mode: 'HTML'
         });
@@ -175,9 +185,9 @@ bot.command("deleteserver", async (ctx) => {
     const serverInfo = info;
     const slot = parseInt(args[1]) - 1;
     const adminCheck = await isAdmin(ctx);
-    
-    if (ctx.message.chat.type == 'private') return;
-    
+
+    if (ctx.message.chat.type === 'private') return;
+
     if (!adminCheck) return;
 
     if (slot < 0 || slot > 2) {
