@@ -38,7 +38,9 @@ bot.command('addserver', async (ctx) => {
     const port = args[2];
     const slot = parseInt(args[3], 10) - 1;
     const adminCheck = await isAdmin(ctx);
+    
     if (ctx.message.chat.type == 'private') return;
+    
     if (!adminCheck) return;
 
     if (!info[chatId]) {
@@ -67,6 +69,9 @@ bot.command('status', async (ctx) => {
     const chatId = ctx.message.chat.id;
     const args = ctx.message.text.slice(1).split(' ');
     const slot = parseInt(args[1], 10) - 1;
+
+    if (ctx.message.chat.type == 'private') return;
+    
     if (slot > -1 || slot < 3) {
         let ip = info[chatId]?.[slot]?.ip;
         let port = info[chatId]?.[slot]?.port;
@@ -170,7 +175,9 @@ bot.command("deleteserver", async (ctx) => {
     const serverInfo = info;
     const slot = parseInt(args[1]) - 1;
     const adminCheck = await isAdmin(ctx);
+    
     if (ctx.message.chat.type == 'private') return;
+    
     if (!adminCheck) return;
 
     if (slot < 0 || slot > 2) {
