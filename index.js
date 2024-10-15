@@ -83,23 +83,22 @@ bot.command('status', async (ctx) => {
     if (ctx.message.chat.type === 'private') return;
 
     if (slot > -1 || slot < 3) {
-        let ip = info[chatId]?.[slot]?.ip;
-        let port = info[chatId]?.[slot]?.port;
-        let res_temp = await axios.get(`https://api.mcsrvstat.us/bedrock/3/${ip}:${port}`)
-        let res_java_temp
-        let res = res_temp.data;
+        let ip = info[chatId]?.[0]?.ip;
+        let port = info[chatId]?.[0]?.port;
+        let res = await serverStatus(ip, port);
         let stat;
 
-        if (!ip || !port) {
-            ctx.telegram.sendMessage(chatId, '😔 В слоте №2 нету добавленного сервера.');
+        if (!ip && !port) {
+            ctx.editMessageText('😔 В слоте №1 нету добавленного сервера.');
             return;
         };
 
-        if (res.online === true) {
-            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`;
+        if (res.online === false) {
+            stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
-            stat = 'отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.';
+            stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
         };
+        
         await ctx.telegram.sendMessage(chatId, `🔌Состояние сервера в слоте №${slot + 1} - ${stat}`, {
             parse_mode: 'HTML'
         });
@@ -127,7 +126,7 @@ bot.on("callback_query", async (ctx) => {
             return;
         };
 
-        if (res === false) {
+        if (res.online === false) {
             stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
@@ -147,7 +146,7 @@ bot.on("callback_query", async (ctx) => {
             return;
         };
 
-        if (res === false) {
+        if (res.online === false) {
             stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
@@ -167,7 +166,7 @@ bot.on("callback_query", async (ctx) => {
             return;
         };
 
-        if (res === false) {
+        if (res.online === false) {
             stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
         } else {
             stat = `включён!\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>,\n👥 Игроков онлайн: ${res.players.online}/${res.players.max},\n📙 Версия: ${res.version} \n📃 Описание сервера: ${res.motd.clean}`
