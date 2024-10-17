@@ -2,7 +2,6 @@
 const keep_alive = require('./keep_alive.js');
 const { Telegraf, Markup } = require('telegraf');
 const axios = require('axios');
-const fs = require('fs');
 const MongoClient = require("mongodb").MongoClient;
 require('dotenv').config();
 
