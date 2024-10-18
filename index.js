@@ -266,7 +266,7 @@ bot.on('inline_query', async (ctx) => {
         const text = ctx.inlineQuery.query.trim().split(' ');
         const results = [];
 
-        if (text.length < 0) {
+        if (!text[0] || !text[1]) {
             results.push({
                 type: 'article',
                 id: 'without_text',
@@ -292,7 +292,7 @@ bot.on('inline_query', async (ctx) => {
                 type: 'article',
                 id: 'with_text',
                 title: 'Нажмите на меня!',
-                description: "Нажми на меня, чтобы узнать статус сервера!",
+                description: "Нажмите на меня, чтобы узнать статус сервера!",
                 input_message_content: {
                     message_text: `🔌 Состояние сервера - ${stat}`,
                     parse_mode: 'HTML',
