@@ -79,6 +79,11 @@ bot.command('status', async (ctx) => {
         const coll = mdb.db(process.env.DB).collection(`servers${slot}`);
         const findColl = await coll.find({ chatId }).toArray();
 
+        if (findColl.length < 1) {
+            await ctx.telegram.sendMessage(`😔 В слоте №${slot} нету добавленного сервера.`);
+            return;
+        };
+
         if (ctx.message.chat.type === 'private') return;
 
         if (slot > -1 || slot < 3) {
@@ -86,11 +91,6 @@ bot.command('status', async (ctx) => {
             const port = findColl[0].port;
             const res = await serverStatus(ip, port);
             let stat;
-
-            if (!ip || !port) {
-                ctx.editMessageText(`😔 В слоте №${slot} нету добавленного сервера.`);
-                return;
-            };
 
             if (res.online === false) {
                 stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
@@ -163,8 +163,9 @@ bot.on("callback_query", async (ctx) => {
             const coll = mdb.db(process.env.DB).collection('servers1');
             const findColl = await coll.find({ chatId }).toArray();
 
-            if (!findColl[0].ip && !findColl[0].port) {
+            if (findColl.length < 1) {
                 await ctx.editMessageText('😔 В слоте №1 нету добавленного сервера.');
+                return;
             };
 
             const ip = findColl[0].ip;
@@ -185,8 +186,9 @@ bot.on("callback_query", async (ctx) => {
             const coll = mdb.db(process.env.DB).collection('servers2');
             const findColl = await coll.find({ chatId }).toArray();
 
-            if (!findColl[0].ip && !findColl[0].port) {
+            if (findColl.length < 1) {
                 await ctx.editMessageText('😔 В слоте №2 нету добавленного сервера.');
+                return;
             };
 
             const ip = findColl[0].ip;
@@ -207,8 +209,9 @@ bot.on("callback_query", async (ctx) => {
             const coll = mdb.db(process.env.DB).collection('servers3');
             const findColl = await coll.find({ chatId }).toArray();
 
-            if (!findColl[0].ip && !findColl[0].port) {
+            if (findColl.length < 1) {
                 await ctx.editMessageText('😔 В слоте №3 нету добавленного сервера.');
+                return;
             };
 
             const ip = findColl[0].ip;
