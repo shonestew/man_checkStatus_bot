@@ -82,8 +82,8 @@ bot.command('status', async (ctx) => {
         if (ctx.message.chat.type === 'private') return;
 
         if (slot > -1 || slot < 3) {
-            const ip = findColl[0].ip;
-            const port = findColl[0].port;
+            const ip = findColl[0]?.ip;
+            const port = findColl[0]?.port;
             const res = await serverStatus(ip, port);
             let stat;
 
