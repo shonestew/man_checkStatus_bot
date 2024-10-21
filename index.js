@@ -79,11 +79,6 @@ bot.command('status', async (ctx) => {
         const coll = mdb.db(process.env.DB).collection(`servers${slot}`);
         const findColl = await coll.find({ chatId }).toArray();
 
-        if (findColl.length < 1) {
-            await ctx.telegram.sendMessage(`😔 В слоте №${slot} нету добавленного сервера.`);
-            return;
-        };
-
         if (ctx.message.chat.type === 'private') return;
 
         if (slot > -1 || slot < 3) {
@@ -91,6 +86,11 @@ bot.command('status', async (ctx) => {
             const port = findColl[0].port;
             const res = await serverStatus(ip, port);
             let stat;
+
+            if (findColl.length < 0) {
+                await ctx.telegram.sendMessage(chatId, `😔 В слоте №${slot} нету добавленного сервера.`);
+                return;
+            };
 
             if (res.online === false) {
                 stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
