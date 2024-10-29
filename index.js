@@ -123,7 +123,7 @@ bot.command('status', async (ctx) => {
             };
 
             // Если сервер отключён.
-            if (res.online === false) {
+            if (res.online === false || res.motd.clean == 'Offline') {
                 stat = `отключён.\n📘 Айпи-адрес и порт: <code>${ip}</code>/<code>${port}</code>.`
             // Если сервер включён.
             } else {
