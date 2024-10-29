@@ -1,8 +1,10 @@
-Russian/Русский: Этот бот нужен для проверки статуса сервера в Майнкрафте.
+# Russian/Русский: Этот бот нужен для проверки статуса сервера в Майнкрафте.
 
-English/Английский: This bot need to checking of server status in Minecraft.
+# English/Английский: This bot need to checking of server status in Minecraft.
 
-Created with using Telegraf framework.
+## Created with using Telegraf framework.
+
+## Создан с использованием фреймворка Telegraf.
 
 От 25.09.24:
 Бот переписан на библиотеку Telegraf, поддержка инлайн-кнопок.
