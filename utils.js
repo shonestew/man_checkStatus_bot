@@ -1,3 +1,5 @@
+// Импорт нужных библиотек.
+const axios = require('axios');
 // Проверка на администратора, путём сравнения айди отправителя команды с айди администраторов чата/группы.
 async function isAdmin(ctx) {
     const chatId = ctx.message.chat.id;
