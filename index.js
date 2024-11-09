@@ -2,7 +2,6 @@
 const keep_alive = require('./keep_alive.js');
 // Импорт нужных библиотек и фреймворков для работы бота.
 const { Telegraf, Markup } = require('telegraf');
-const axios = require('axios');
 const MongoClient = require("mongodb").MongoClient;
 require('dotenv').config();
 // В файле ".env" надо вписать следующие параметры:
@@ -81,7 +80,12 @@ bot.command('status', async (ctx) => {
         if (ctx.message.chat.type === 'private') return;
 
         // Если введённый слот не больше 3 или больше 1 - то это верно указанный слот.
-        if (slot && slot > 1 || slot <= 3) {
+        if (slot && slot > 1 || slot < 4) {
+            // Если в слоте нету сервера.
+            if (findColl.length < 1) {
+                await ctx.editMessageText(`😔 В слоте №${slot} нету добавленного сервера.`);
+                return;
+            };
             // Объявляем нужные переменные.
             const ip = findColl[0].ip;
             const port = findColl[0].port;
